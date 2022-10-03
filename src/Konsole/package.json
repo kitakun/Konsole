@@ -1,0 +1,12 @@
+{
+    "name": "com.kitakun.konsole",
+    "displayName": "Konsole",
+    "author": { "name": "Bagheads", "url": "https://github.com/kitakun" },
+    "version": "1.0.0",
+    "unity": "2018.4",
+    "description": "Provides an easy injectable ingame console",
+    "keywords": [ "console" ],
+    "license": "MIT",
+    "category": "console",
+    "dependencies": {}
+}
