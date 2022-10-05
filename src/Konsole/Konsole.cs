@@ -14,6 +14,7 @@ using UnityEngine.UI;
 
 namespace Konsole
 {
+    [UnityEditor.InitializeOnLoadAttribute]
     public static class Konsole
     {
         private const float CONSOLE_HEIGHT = 300f;
@@ -128,6 +129,15 @@ namespace Konsole
         }
 
         // internals
+
+        static Konsole()
+        {
+            if (GoUtils.TryFindComponentInActiveScene<KonsoleComponent>(out var existingConsole))
+            {
+                UnityEngine.Object.Destroy(existingConsole.gameObject);
+                Debug.LogError($"Konsole.static - we don't support unity's hot-reloading and wish the same to you! otherwise you will face a lot of bugs, be care.");
+            }
+        }
 
         private static void Internal_IntegrateConsole(RectTransform parent, IntegrationOptions options)
         {
