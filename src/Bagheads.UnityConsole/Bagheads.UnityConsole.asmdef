@@ -1,0 +1,22 @@
+{
+    "name": "Bagheads.UnityConsole",
+    "rootNamespace": "",
+    "references": [
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "",
+            "define": "KONSOLE_INPUT_SYSTEM"
+        }
+    ],
+    "noEngineReferences": false
+}

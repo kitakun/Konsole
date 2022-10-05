@@ -7,17 +7,64 @@ Benefits:
  - single line of code
  - easy custom commands with arguments integration
 
-## How to include:
+# How to include:
 
-In any place, in any method
+ - You can add component `CreateKonsole` on any object, this script will call method `IntegrateInExistingCanvas` on start.
+ 
+ ![Create Konsole (Script) in Unity](/docs/how_to_add_1.jpg)
+___
+ - In any place, in any method you can create console yourself
  ```cs
 protected void Awake()
 {
-    Konsole.Konsole.IntegrateInExistingCanvas();
+    Konsole.IntegrateInExistingCanvas();
 }
  ```
 
- If you need change colors or other settings:
+# commands
+
+### - Variant 1 - Anonymouse registration
+
+```cs
+Konsole.Konsole.RegisterCommand("quit", _ =>
+{
+    // Here could be your code for this command
+    Application.Quit();
+});
+```
+
+If you need to log something back or work with arguments you can do the following:
+```cs
+Konsole.Konsole.RegisterCommand("ping", context =>
+{
+    context.Log("Pong");
+});
+```
+___
+### - Variant 2 - Independent class
+#### **`Command_Quit.cs`**
+```cs
+public class Command_Quit : ICommand
+{
+    public string Name => "quit";
+    public string Description => "Will quit from the Application";
+    
+    public void Launch(CommandContext context)
+    {
+        Application.Quit();
+    }
+}
+```
+In any place:
+#### **`MyGameManager.cs`**
+```cs
+protected void Start()
+{
+    Konsole.CommandsList.Add(new Command_Quit());
+}
+```
+
+# All parameters
 
 ```cs
 protected void Awake()
@@ -42,29 +89,10 @@ protected void Awake()
 }
 ```
 
-## commands
 
-### Variant 1 - Anonymouse registration
-
-```cs
-Konsole.Konsole.RegisterCommand("quit", (_) =>
-{
-    // Here could be your code for this command
-    Application.Quit();
-});
-```
-
-If you need to log something back or work with arguments you can do the following:
-```cs
-Konsole.Konsole.RegisterCommand("ping", (context) =>
-{
-    context.Log($"Pong");
-});
-```
-
-
-## Supports:
+# Supports:
 - ✔️ - Default unity text
+- ❌ - Unity's hot-reloading
 - ☐  -  TMP Text support
 - ☐  - Multilne in logs
 - ☐  - Support for all Unity.InputSystem events
