@@ -111,6 +111,7 @@ namespace Konsole.Components
 
                 if (_canvas.interactable)
                 {
+                    UnfocusInput();
                     _canvas.interactable = false;
                     _canvas.blocksRaycasts = false;
                 }
@@ -300,6 +301,14 @@ namespace Konsole.Components
                         Debug.LogError($"Konsole.{nameof(Internal_WriteMessageToConsole)} - type of text ({data.textComponent.GetType().Name}) not implemented.");
                         break;
                 }
+            }
+        }
+
+        internal void UnfocusInput()
+        {
+            if (InputField != null)
+            {
+                InputField.OnDeselect(new BaseEventData(EventSystem.current));
             }
         }
     }
