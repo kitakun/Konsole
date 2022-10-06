@@ -8,7 +8,7 @@ namespace Bagheads.UnityConsole.Data
         /// <summary>
         /// If True - will found NewInputSystem component and will try to inject action to toggle console
         /// </summary>
-        public bool UseNewInputSystem = false;
+        public bool UseNewInputSystem = true;
 
         /// <summary>
         /// Action name to be injected into

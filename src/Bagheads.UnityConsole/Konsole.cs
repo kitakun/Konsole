@@ -203,7 +203,9 @@ namespace Bagheads.UnityConsole
                 {
                     case PlayerNotifications.SendMessages:
                     case PlayerNotifications.BroadcastMessages:
+#if UNITY_EDITOR
                         Debug.LogWarning($"Konsole.{nameof(Internal_IntegrateConsole)} - you need to toggle console yourself by {nameof(Konsole)}.{nameof(ToggleConsole)}", ConsoleInstance);
+#endif
                         break;
 
                     case PlayerNotifications.InvokeUnityEvents:
