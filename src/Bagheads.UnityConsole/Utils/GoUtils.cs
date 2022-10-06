@@ -36,17 +36,17 @@ namespace Bagheads.UnityConsole.Utils
             return newGoTra;
         }
 
-        internal static bool TryAddDefaultTextAsChild(RectTransform owner, out Text component)
+        internal static bool TryAddComponentAsChild<T>(RectTransform owner, out T component)
         {
             component = default;
             try
             {
-                var textGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
+                var textGo = new GameObject("Text", typeof(RectTransform), typeof(T));
                 var textRect = textGo.GetComponent<RectTransform>();
                 textRect.SetParent(owner);
                 textRect.localScale = Vector3.one;
 
-                component = textGo.GetComponent<Text>();
+                component = textGo.GetComponent<T>();
             }
             catch (System.Exception es)
             {

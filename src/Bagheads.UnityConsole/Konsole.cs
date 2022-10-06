@@ -112,6 +112,24 @@ namespace Bagheads.UnityConsole
                 return;
             }
 
+#if KONSOLE_TEXT_MESH_PRO
+            if (options is {UseTextMeshPro: true} && options.TMpFontAsset == null)
+            {
+                if (options.DefaultTextFont == null)
+                {
+                    var fontPaths = Font.GetPathsToOSFonts();
+                    var osFont = new Font(fontPaths[124]);
+                    var fontAsset = TMPro.TMP_FontAsset.CreateFontAsset(osFont);
+                    options.TMpFontAsset = fontAsset;
+                }
+                else
+                {
+                    var fontAsset = TMPro.TMP_FontAsset.CreateFontAsset(options.DefaultTextFont);
+                    options.TMpFontAsset = fontAsset;
+                }
+            }
+#endif
+
             Internal_IntegrateConsole((RectTransform) existingCanvas.transform, options);
         }
 
@@ -161,6 +179,9 @@ namespace Bagheads.UnityConsole
                 ? options.FontSize
                 : DEFAULT_FONT_SIZE;
             ConsoleInstance.LogTime = options.WriteLogTime;
+#if KONSOLE_INPUT_SYSTEM
+            ConsoleInstance.UseNewInputSystem = options.UseNewInputSystem;
+#endif
 
             if (options.Theme.StatusError.HasValue)
                 ConsoleInstance.Theme.StatusError = options.Theme.StatusError.Value;
@@ -169,9 +190,9 @@ namespace Bagheads.UnityConsole
             if (options.Theme.StatusLog.HasValue)
                 ConsoleInstance.Theme.StatusLog = options.Theme.StatusLog.Value;
 
+#if KONSOLE_INPUT_SYSTEM
             if (options.UseNewInputSystem)
             {
-#if KONSOLE_INPUT_SYSTEM
                 if (!GoUtils.TryFindComponentInActiveScene(out PlayerInput playerInput))
                 {
                     Debug.LogError($"Konsole.{nameof(Internal_IntegrateConsole)} - Can't find <{nameof(PlayerInput)}> component!");
@@ -182,7 +203,9 @@ namespace Bagheads.UnityConsole
                 {
                     case PlayerNotifications.SendMessages:
                     case PlayerNotifications.BroadcastMessages:
+#if UNITY_EDITOR
                         Debug.LogWarning($"Konsole.{nameof(Internal_IntegrateConsole)} - you need to toggle console yourself by {nameof(Konsole)}.{nameof(ToggleConsole)}", ConsoleInstance);
+#endif
                         break;
 
                     case PlayerNotifications.InvokeUnityEvents:
@@ -204,10 +227,8 @@ namespace Bagheads.UnityConsole
                         Debug.LogError($"Konsole.{nameof(Internal_IntegrateConsole)} - Control behavior = {playerInput.notificationBehavior} not implemented!");
                         break;
                 }
-#else
-                Debug.LogWarning($"Konsole.{nameof(Internal_IntegrateConsole)} - can't find package UnityEngine.InputSystem. Do you have it in project?");
-#endif
             }
+#endif
 
             // positioning
             ownerRectTransform.pivot = new Vector2(0.5f, 1f);
@@ -234,35 +255,81 @@ namespace Bagheads.UnityConsole
             RectUtils.SetUseBottomLine(inputRect, new Vector2(-BUTTON_WIDTH, INPUT_HEIGHT));
 
             var inputImage = inputGo.GetComponent<Image>();
-            var inputComponent = inputGo.AddComponent<InputField>();
-            inputComponent.targetGraphic = inputImage;
-            inputComponent.onSubmit.AddListener(ConsoleInstance.OnSubmit);
 
-            if (options.AutoCompleteLines > 0)
-            {
-                var typeahead = ConsoleInstance.gameObject.AddComponent<TypeaheadComponent>();
-                typeahead.AutocompleteLines = options.AutoCompleteLines;
-                typeahead.InputTransform = inputRect;
-                typeahead.UseTMP = options.UseTextMeshPro;
-                typeahead.Font = options.DefaultTextFont != null
-                    ? options.DefaultTextFont
-                    : ConsoleInstance.DefaultFont;
-                typeahead.FontSize = options.FontSize > 0
-                    ? options.FontSize
-                    : DEFAULT_FONT_SIZE;
-                inputComponent.onValueChanged.AddListener(typeahead.Typeahead);
-            }
 
+#if KONSOLE_TEXT_MESH_PRO
             if (!options.UseTextMeshPro)
             {
+#endif
+                // default input
+                var inputComponent = inputGo.AddComponent<InputField>();
+                inputComponent.targetGraphic = inputImage;
+                inputComponent.onSubmit.AddListener(ConsoleInstance.OnSubmit);
+
+                if (options.AutoCompleteLines > 0)
+                {
+                    var typeahead = ConsoleInstance.gameObject.AddComponent<TypeaheadComponent>();
+                    typeahead.AutocompleteLines = options.AutoCompleteLines;
+                    typeahead.InputTransform = inputRect;
+                    typeahead.UseTMP = options.UseTextMeshPro;
+                    typeahead.Font = options.DefaultTextFont != null
+                        ? options.DefaultTextFont
+                        : ConsoleInstance.DefaultFont;
+                    typeahead.FontSize = options.FontSize > 0
+                        ? options.FontSize
+                        : DEFAULT_FONT_SIZE;
+                    inputComponent.onValueChanged.AddListener(typeahead.Typeahead);
+                }
+
                 // default unity engine text
-                if (GoUtils.TryAddDefaultTextAsChild(inputComponent.transform as RectTransform, out var textComponent))
+                if (GoUtils.TryAddComponentAsChild<Text>(inputComponent.transform as RectTransform, out var textComponent))
                 {
                     textComponent.font = options.DefaultTextFont != null
                         ? options.DefaultTextFont
                         : ConsoleInstance.DefaultFont;
 
                     textComponent.color = Color.black;
+                    textComponent.supportRichText = false;
+
+                    // input field - text - positioning
+                    RectUtils.SetUseAllSpace(textComponent.rectTransform, new Vector2(-10, -10));
+                    inputComponent.textComponent = textComponent;
+
+                    ConsoleInstance.FocusInput();
+                }
+#if KONSOLE_TEXT_MESH_PRO
+            }
+            else
+            {
+                var inputComponent = inputGo.AddComponent<TMPro.TMP_InputField>();
+                inputComponent.targetGraphic = inputImage;
+                inputComponent.onSubmit.AddListener(ConsoleInstance.OnSubmit);
+
+                if (options.AutoCompleteLines > 0)
+                {
+                    var typeahead = ConsoleInstance.gameObject.AddComponent<TypeaheadComponent>();
+                    typeahead.AutocompleteLines = options.AutoCompleteLines;
+                    typeahead.InputTransform = inputRect;
+                    typeahead.UseTMP = options.UseTextMeshPro;
+                    typeahead.Font = options.DefaultTextFont != null
+                        ? options.DefaultTextFont
+                        : ConsoleInstance.DefaultFont;
+                    typeahead.FontSize = options.FontSize > 0
+                        ? options.FontSize
+                        : DEFAULT_FONT_SIZE;
+                    typeahead.TmpFont = options.TMpFontAsset;
+                    inputComponent.onValueChanged.AddListener(typeahead.Typeahead);
+                }
+
+                if (GoUtils.TryAddComponentAsChild<TMPro.TextMeshProUGUI>(inputComponent.transform as RectTransform, out var textComponent))
+                {
+                    textComponent.font = options.TMpFontAsset;
+                    textComponent.fontSize = options.FontSize > 0
+                        ? options.FontSize
+                        : DEFAULT_FONT_SIZE;
+                    textComponent.autoSizeTextContainer = true;
+                    textComponent.color = Color.black;
+                    textComponent.richText = false;
 
                     // input field - text - positioning
                     RectUtils.SetUseAllSpace(textComponent.rectTransform, new Vector2(-10, -10));
@@ -271,11 +338,7 @@ namespace Bagheads.UnityConsole
                     ConsoleInstance.FocusInput();
                 }
             }
-            else
-            {
-                // text mesh pro
-                // TODO
-            }
+#endif
 
             // scroll-rect
             var scrollRectGo = new GameObject("LogsScrollRect", typeof(RectTransform), typeof(ScrollRect), typeof(CanvasRenderer));

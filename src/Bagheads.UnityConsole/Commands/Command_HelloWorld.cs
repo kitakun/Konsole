@@ -13,10 +13,6 @@ namespace Bagheads.UnityConsole.Commands
                 ? $"{TextTags.Bold("world")} with params ={string.Join(",", context.Parameters)}"
                 : $"{TextTags.Bold("world")} with {TextTags.Italian("no params")}";
 
-            Debug.Log($"Default lot");
-            Debug.LogWarning($"Warning log");
-            Debug.LogError($"Error log");
-            
             context.Log(textResponse);
         }
     }
