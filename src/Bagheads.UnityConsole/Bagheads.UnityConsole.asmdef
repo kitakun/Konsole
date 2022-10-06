@@ -2,7 +2,8 @@
     "name": "Bagheads.UnityConsole",
     "rootNamespace": "",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,6 +17,11 @@
             "name": "com.unity.inputsystem",
             "expression": "",
             "define": "KONSOLE_INPUT_SYSTEM"
+        },
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "",
+            "define": "KONSOLE_TEXT_MESH_PRO"
         }
     ],
     "noEngineReferences": false

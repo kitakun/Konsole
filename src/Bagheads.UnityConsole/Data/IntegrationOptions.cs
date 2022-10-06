@@ -4,6 +4,7 @@ namespace Bagheads.UnityConsole.Data
 {
     public class IntegrationOptions
     {
+#if KONSOLE_INPUT_SYSTEM
         /// <summary>
         /// If True - will found NewInputSystem component and will try to inject action to toggle console
         /// </summary>
@@ -13,16 +14,21 @@ namespace Bagheads.UnityConsole.Data
         /// Action name to be injected into
         /// </summary>
         public string NewInputSystemToggleAction;
-
-        /// <summary>
-        /// Use TextMeshPro instead UnityEngine.Text
-        /// </summary>
-        public bool UseTextMeshPro = false;
+#endif
 
         /// <summary>
         /// Font for text
         /// </summary>
         public Font DefaultTextFont;
+
+#if KONSOLE_TEXT_MESH_PRO
+        /// <summary>
+        /// Use TextMeshPro instead UnityEngine.Text
+        /// </summary>
+        public bool UseTextMeshPro = false;
+
+        public TMPro.TMP_FontAsset TMpFontAsset;
+#endif
 
         /// <summary>
         /// Font size for logs
@@ -33,7 +39,7 @@ namespace Bagheads.UnityConsole.Data
         /// Write time in log, for example <c>[10:30:07] [Log] HelloWorld</c>
         /// </summary>
         public bool WriteLogTime = true;
-        
+
         /// <summary>
         /// Colors in console
         /// </summary>

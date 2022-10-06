@@ -23,8 +23,14 @@ namespace Bagheads.UnityConsole.Components
 
             private CanvasGroup _canvas;
             private RectTransform _transform;
+
             private InputField _inputField;
             internal InputField InputField => _inputField;
+
+#if KONSOLE_TEXT_MESH_PRO
+            private TMPro.TMP_InputField _tmpText;
+            internal TMPro.TMP_InputField TMP_InputField => _tmpText;
+#endif
 
             // internal state
             private bool _shouldBeVisible;
@@ -37,10 +43,14 @@ namespace Bagheads.UnityConsole.Components
             // public state
             [Header("public state")]
             public Font DefaultFont;
+#if KONSOLE_TEXT_MESH_PRO
+            public TMPro.TMP_FontAsset TMpFontAsset;
+#endif
             public int FontSize;
             public bool UseTMP;
             public bool LogTime;
             public ThemeOptions Theme;
+            public bool UseNewInputSystem;
 
             // refs
             public RectTransform ScrollViewContentTra { get; internal set; }
@@ -67,6 +77,9 @@ namespace Bagheads.UnityConsole.Components
             protected void Start()
             {
                 _inputField = GetComponentInChildren<InputField>();
+#if KONSOLE_TEXT_MESH_PRO
+                _tmpText = GetComponentInChildren<TMPro.TMP_InputField>();
+#endif
                 _frameHeight = ((RectTransform) transform).sizeDelta.y;
                 _reusableCommandContext = new CommandContext(this);
 
@@ -95,6 +108,10 @@ namespace Bagheads.UnityConsole.Components
             {
                 Internal_ShowHideTick();
                 Internal_ScrollTick();
+                if (!UseNewInputSystem)
+                {
+                    Internal_ConsoleDefaultInput();
+                }
             }
 
             private void Internal_ShowHideTick()
@@ -148,6 +165,14 @@ namespace Bagheads.UnityConsole.Components
                 }
             }
 
+            private void Internal_ConsoleDefaultInput()
+            {
+                if (Input.GetKeyDown(KeyCode.BackQuote))
+                {
+                    Konsole.ToggleConsole();
+                }
+            }
+
             // public methods
 
             public void ToggleConsole()
@@ -162,6 +187,13 @@ namespace Bagheads.UnityConsole.Components
                     EventSystem.current.SetSelectedGameObject(_inputField.gameObject, null);
                     _inputField.ActivateInputField();
                 }
+#if KONSOLE_TEXT_MESH_PRO
+                if (TMP_InputField != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(TMP_InputField.gameObject, null);
+                    TMP_InputField.ActivateInputField();
+                }
+#endif
             }
 
             public void Clear()
@@ -194,7 +226,16 @@ namespace Bagheads.UnityConsole.Components
 
             internal void OnSubmit(string data)
             {
-                _inputField.text = string.Empty;
+                if (_inputField != null)
+                {
+                    _inputField.text = string.Empty;
+                }
+#if KONSOLE_TEXT_MESH_PRO
+                if (TMP_InputField != null)
+                {
+                    TMP_InputField.text = string.Empty;
+                }
+#endif
                 ReusableRichParameters.Clear();
 
                 const string format = "{0}: {1}";
@@ -259,11 +300,13 @@ namespace Bagheads.UnityConsole.Components
 
                     if (!UseTMP)
                     {
+                        // default unity3d text
                         var logText = logRecordTra.gameObject.AddComponent<Text>();
                         logText.font = DefaultFont;
                         logText.text = logText.supportRichText
                             ? StringUtils.BuildRich(format, parameters, richParameters, LogTime)
                             : StringUtils.Build(format, parameters, LogTime);
+                        logText.raycastTarget = false;
 
                         if (FontSize > 0)
                         {
@@ -271,6 +314,26 @@ namespace Bagheads.UnityConsole.Components
                         }
 
                         _logs.Add(logRecordTra, (null, logText));
+                    }
+                    else
+                    {
+#if KONSOLE_TEXT_MESH_PRO
+                        var logText = logRecordTra.gameObject.AddComponent<TMPro.TextMeshProUGUI>();
+                        logText.font = TMpFontAsset;
+                        logText.text = logText.richText
+                            ? StringUtils.BuildRich(format, parameters, richParameters, LogTime)
+                            : StringUtils.Build(format, parameters, LogTime);
+                        logText.raycastTarget = false;
+
+                        if (FontSize > 0)
+                        {
+                            logText.fontSize = FontSize;
+                        }
+
+                        _logs.Add(logRecordTra, (null, logText));
+#else
+                        Debug.LogError($"Konsole.{nameof(Internal_WriteMessageToConsole)} - can't find TextMeshPRO package! Do you have it?");
+#endif
                     }
 
                     if (ScrollViewContentTra != null)
@@ -298,6 +361,13 @@ namespace Bagheads.UnityConsole.Components
                                 : StringUtils.Build(format, parameters, LogTime);
                             TryScrollToBottom();
                             break;
+#if KONSOLE_TEXT_MESH_PRO
+                        case TMPro.TMP_Text textMeshText:
+                            textMeshText.text = textMeshText.richText
+                                ? StringUtils.BuildRich(format, parameters, richParameters, LogTime)
+                                : StringUtils.Build(format, parameters, LogTime);
+                            break;
+#endif
 
                         default:
                             Debug.LogError($"Konsole.{nameof(Internal_WriteMessageToConsole)} - type of text ({data.textComponent.GetType().Name}) not implemented.");
@@ -312,6 +382,12 @@ namespace Bagheads.UnityConsole.Components
                 {
                     InputField.OnDeselect(new BaseEventData(EventSystem.current));
                 }
+#if KONSOLE_TEXT_MESH_PRO
+                if (TMP_InputField != null)
+                {
+                    TMP_InputField.OnDeselect(new BaseEventData(EventSystem.current));
+                }
+#endif
             }
         }
     }

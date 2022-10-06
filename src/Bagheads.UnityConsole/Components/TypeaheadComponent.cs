@@ -15,6 +15,9 @@ namespace Bahgeads.UnityConsole.Components
         public int AutocompleteLines { get; internal set; }
         public bool UseTMP { get; internal set; }
         public Font Font { get; internal set; }
+#if KONSOLE_TEXT_MESH_PRO
+        public TMPro.TMP_FontAsset TmpFont { get; internal set; }
+#endif
         public int FontSize { get; internal set; }
         internal RectTransform InputTransform { get; set; }
 
@@ -36,12 +39,12 @@ namespace Bahgeads.UnityConsole.Components
                 var buttonIndex = i;
                 button.onClick.AddListener(() => OnTypeaheadClicked(buttonIndex));
 
+                const float LINE_HEIGHT = 26;
+                RectUtils.SetUseTopLine(helpLineTransform, new Vector2(0, LINE_HEIGHT));
+
                 if (!UseTMP)
                 {
-                    const float LINE_HEIGHT = 26;
-                    RectUtils.SetUseTopLine(helpLineTransform, new Vector2(0, LINE_HEIGHT));
-
-                    if (GoUtils.TryAddDefaultTextAsChild(helpLineTransform, out var textComponent))
+                    if (GoUtils.TryAddComponentAsChild<Text>(helpLineTransform, out var textComponent))
                     {
                         textComponent.font = Font;
                         textComponent.color = Color.black;
@@ -59,7 +62,26 @@ namespace Bahgeads.UnityConsole.Components
                 }
                 else
                 {
-                    // TODO
+#if KONSOLE_TEXT_MESH_PRO
+                    if (GoUtils.TryAddComponentAsChild<TMPro.TextMeshProUGUI>(helpLineTransform, out var textComponent))
+                    {
+                        textComponent.font = TmpFont;
+                        textComponent.color = Color.black;
+                        textComponent.fontSize = FontSize;
+                        textComponent.autoSizeTextContainer = true;
+
+                        RectUtils.SetUseAllSpace(textComponent.rectTransform, new Vector2(-8, 0), new Vector2(0, -4));
+                        helpLineTransform.anchoredPosition = new Vector2(0, -(LINE_HEIGHT + 1) * (i + 1));
+
+                        _lines.Add((helpLineTransform, background, textComponent));
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Konsole.{nameof(TypeaheadComponent)} - can't add default unity text to dropdown element. It's a bug, sorry for this :c", this);
+                    }
+#else
+                    Debug.LogError($"Konsole.{nameof(TypeaheadComponent)} - can't find TMP Pro Text component. Please disable TMP in options", this);
+#endif
                 }
             }
 
@@ -95,6 +117,12 @@ namespace Bahgeads.UnityConsole.Components
                             defaultUnityText.text = _typeaheadCommands[i].Name;
                             break;
 
+#if KONSOLE_TEXT_MESH_PRO
+                        case TMPro.TextMeshProUGUI tmpText:
+                            tmpText.text = _typeaheadCommands[i].Name;
+                            break;
+#endif
+
                         default:
                             // TODO
                             break;
@@ -114,7 +142,18 @@ namespace Bahgeads.UnityConsole.Components
         {
             if (Konsole.ConsoleInstance != null)
             {
-                Konsole.ConsoleInstance.InputField.text = _typeaheadCommands[index].Name;
+                if (Konsole.ConsoleInstance.InputField != null)
+                {
+                    Konsole.ConsoleInstance.InputField.text = _typeaheadCommands[index].Name;
+                }
+
+#if KONSOLE_TEXT_MESH_PRO
+                if (Konsole.ConsoleInstance.TMP_InputField != null)
+                {
+                    Konsole.ConsoleInstance.TMP_InputField.text = _typeaheadCommands[index].Name;
+                }
+#endif
+
                 Konsole.ConsoleInstance.FocusInput();
                 Typeahead(string.Empty);
             }

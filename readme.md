@@ -26,7 +26,7 @@ protected void Awake()
 ### - Variant 1 - Anonymouse registration
 
 ```cs
-Konsole.Konsole.RegisterCommand("quit", _ =>
+Konsole.RegisterCommand("quit", _ =>
 {
     // Here could be your code for this command
     Application.Quit();
@@ -35,7 +35,7 @@ Konsole.Konsole.RegisterCommand("quit", _ =>
 
 If you need to log something back or work with arguments you can do the following:
 ```cs
-Konsole.Konsole.RegisterCommand("ping", context =>
+Konsole.RegisterCommand("ping", context =>
 {
     context.Log("Pong");
 });
@@ -69,7 +69,7 @@ protected void Start()
 ```cs
 protected void Awake()
 {
-    Konsole.Konsole.IntegrateInExistingCanvas(new IntegrationOptions
+    Konsole.IntegrateInExistingCanvas(new IntegrationOptions
     {
         DefaultTextFont = m_defaultFont, // here you can set custom font
         FontSize = m_fontSize, // here you can adjust font size
@@ -93,6 +93,8 @@ protected void Awake()
 # Supports:
 - ✔️ - Default unity text
 - ❌ - Unity's hot-reloading
-- ☐  -  TMP Text support
+- ✔️  - TMP Text support
 - ☐  - Multilne in logs
 - ☐  - Support for all Unity.InputSystem events
+- ☐  - Console styles (GoldSRC, Source1 like, UnityDefaults)
+- ☐  - Customization (background image)
