@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿using Bagheads.UnityConsole.Components;
 
 namespace Bagheads.UnityConsole.Commands
 {
@@ -11,15 +11,20 @@ namespace Bagheads.UnityConsole.Commands
         {
             if (context.Parameters.Count == 1)
             {
-                var ownerTransform = context.Owner.transform as RectTransform;
                 var rawNewSize = context.Parameters[0];
                 if (rawNewSize.EndsWith("%"))
                 {
                     var rawNewSizeSliced = rawNewSize.Remove(rawNewSize.Length - 1, 1);
-                    if (int.TryParse(rawNewSizeSliced, out var pixels))
+                    if (int.TryParse(rawNewSizeSliced, out var percentValue))
                     {
-                        var percentVal = Screen.safeArea.height;
-                        ownerTransform.sizeDelta = new Vector2(0, Mathf.Min(Mathf.Max(pixels, percentVal), 100));
+                        for (var i = 0; i < context.Owner.InternalComponents.Count; i++)
+                        {
+                            if (context.Owner.InternalComponents[i] is PreventFromEditor.ControlContainerHeight heightController)
+                            {
+                                heightController.SetHeightPercent(percentValue);
+                                break;
+                            }
+                        }
                     }
                     else
                     {
@@ -31,7 +36,14 @@ namespace Bagheads.UnityConsole.Commands
                     // direct
                     if (int.TryParse(rawNewSize, out var pixels))
                     {
-                        ownerTransform.sizeDelta = new Vector2(0, Mathf.Max(pixels, 100));
+                        for (var i = 0; i < context.Owner.InternalComponents.Count; i++)
+                        {
+                            if (context.Owner.InternalComponents[i] is PreventFromEditor.ControlContainerHeight heightController)
+                            {
+                                heightController.SetHeight(pixels);
+                                break;
+                            }
+                        }
                     }
                     else
                     {

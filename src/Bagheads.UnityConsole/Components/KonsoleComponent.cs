@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Bagheads.UnityConsole.Components
 {
-    public static class PreventFromEditor
+    public static partial class PreventFromEditor
     {
         [RequireComponent(typeof(CanvasGroup))]
         public class KonsoleComponent : MonoBehaviour
@@ -20,6 +20,7 @@ namespace Bagheads.UnityConsole.Components
 
             internal readonly List<string> ReusableListString = new(4);
             internal readonly List<RichParameter> ReusableRichParameters = new(4);
+            internal readonly List<Component> InternalComponents = new(4);
 
             private CanvasGroup _canvas;
             private RectTransform _transform;
