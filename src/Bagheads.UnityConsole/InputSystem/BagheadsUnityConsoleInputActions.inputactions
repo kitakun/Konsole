@@ -1,0 +1,102 @@
+{
+    "name": "BagheadsUnityConsoleInputActions",
+    "maps": [
+        {
+            "name": "Bagheads.Konsole",
+            "id": "b9d19517-6e90-4f5f-bc3b-8eaa6cedfb3e",
+            "actions": [
+                {
+                    "name": "ToggleConsole",
+                    "type": "Button",
+                    "id": "28f5f2bd-810d-4181-b392-7e2ad4866d1f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Tab",
+                    "type": "Button",
+                    "id": "e04ab66d-8c6e-4219-a2cf-81b38eaee429",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectDirection",
+                    "type": "Value",
+                    "id": "1dbaaa18-5492-4b12-b3df-cfa8d7dc1f0a",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "c7b6e324-00e8-48a9-a886-b1c45b18d664",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "IntegratedConsole",
+                    "action": "ToggleConsole",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4c31b343-1368-45e4-8192-2f96f464f943",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Tab",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Arrows",
+                    "id": "fd660627-1202-459f-9ba9-4726b593f6b2",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectDirection",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "327b8f91-c715-4e51-9d44-d5ae48dd5fa6",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectDirection",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "950a169b-58cc-4c4b-9e95-48fa5296f955",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectDirection",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "IntegratedConsole",
+            "bindingGroup": "IntegratedConsole",
+            "devices": []
+        }
+    ]
+}

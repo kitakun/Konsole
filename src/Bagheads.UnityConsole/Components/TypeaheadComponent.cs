@@ -25,6 +25,14 @@ namespace Bahgeads.UnityConsole.Components
         private readonly List<(RectTransform tra, Image background, MonoBehaviour textComponent)> _lines = new();
         private readonly List<ICommand> _typeaheadCommands = new();
 
+        // selections
+        private int _selectionIndex = -1;
+        internal int SelectedIndex => _selectionIndex + _typeaheadResultsOffset;
+        private int _typeaheadResultsOffset = 0;
+        private bool _ignoreNextChangeEvent;
+
+        // unity
+
         private void Start()
         {
             var helpLineColor = new Color(0.9f, 0.9f, 0.9f, 0.9f);
@@ -88,8 +96,18 @@ namespace Bahgeads.UnityConsole.Components
             Typeahead(string.Empty);
         }
 
+        // public
+
         public void Typeahead(string inputText)
         {
+            if (_ignoreNextChangeEvent)
+            {
+                _ignoreNextChangeEvent = false;
+                return;
+            }
+
+            _selectionIndex = -1;
+            _typeaheadResultsOffset = 0;
             var allCommands = Konsole.CommandsList;
             _typeaheadCommands.Clear();
 
@@ -100,26 +118,60 @@ namespace Bahgeads.UnityConsole.Components
                     if (allCommands[i].Name.IndexOf(inputText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         _typeaheadCommands.Add(allCommands[i]);
-                        if (_typeaheadCommands.Count >= _lines.Count)
-                            break;
                     }
                 }
             }
 
+            ShowTypeaheadResults(_typeaheadResultsOffset);
+        }
+
+        // internals
+
+        private void OnTypeaheadClicked(int index)
+        {
+            if (Konsole.ConsoleInstance != null)
+            {
+                SetInputText(_typeaheadCommands[index].Name);
+
+                Konsole.ConsoleInstance.FocusInput();
+                Typeahead(string.Empty);
+            }
+        }
+
+        private void SetInputText(string text)
+        {
+            if (Konsole.ConsoleInstance.InputField != null)
+            {
+                Konsole.ConsoleInstance.InputField.text = text;
+                Konsole.ConsoleInstance.InputField.caretPosition = text.Length;
+            }
+
+#if KONSOLE_TEXT_MESH_PRO
+            if (Konsole.ConsoleInstance.TMP_InputField != null)
+            {
+                Konsole.ConsoleInstance.TMP_InputField.text = text;
+                Konsole.ConsoleInstance.TMP_InputField.caretPosition = text.Length;
+            }
+#endif
+        }
+
+        private void ShowTypeaheadResults(int offset)
+        {
             for (var i = 0; i < _lines.Count; i++)
             {
+                var actualIndex = i + offset;
                 var shouldBeVisible = _typeaheadCommands.Count > i;
                 if (shouldBeVisible)
                 {
                     switch (_lines[i].textComponent)
                     {
                         case Text defaultUnityText:
-                            defaultUnityText.text = _typeaheadCommands[i].Name;
+                            defaultUnityText.text = _typeaheadCommands[actualIndex].Name;
                             break;
 
 #if KONSOLE_TEXT_MESH_PRO
                         case TMPro.TextMeshProUGUI tmpText:
-                            tmpText.text = _typeaheadCommands[i].Name;
+                            tmpText.text = _typeaheadCommands[actualIndex].Name;
                             break;
 #endif
 
@@ -138,24 +190,66 @@ namespace Bahgeads.UnityConsole.Components
             }
         }
 
-        private void OnTypeaheadClicked(int index)
+        /// <summary>Move cursor down</summary>
+        internal void OnInput_Tab()
         {
-            if (Konsole.ConsoleInstance != null)
+            OnInput_Direction(true);
+        }
+
+        /// <summary>
+        /// Move cursor down and up with offset
+        /// </summary>
+        /// <param name="isDown">cursor direction</param>
+        internal void OnInput_Direction(bool isDown)
+        {
+            if (_typeaheadCommands.Count > 0)
             {
-                if (Konsole.ConsoleInstance.InputField != null)
+                if (isDown)
                 {
-                    Konsole.ConsoleInstance.InputField.text = _typeaheadCommands[index].Name;
-                }
+                    if (_typeaheadCommands.Count > SelectedIndex + 1)
+                    {
+                        if (_typeaheadResultsOffset <= 0)
+                        {
+                            _selectionIndex++;
+                        }
 
-#if KONSOLE_TEXT_MESH_PRO
-                if (Konsole.ConsoleInstance.TMP_InputField != null)
+                        _ignoreNextChangeEvent = true;
+                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+
+                        if (_selectionIndex + 1 == _lines.Count)
+                        {
+                            _typeaheadResultsOffset++;
+                            ShowTypeaheadResults(_typeaheadResultsOffset);
+                        }
+                    }
+                    else if (_typeaheadCommands.Count == SelectedIndex + 1 && _typeaheadResultsOffset > 0)
+                    {
+                        // select last element
+                        _ignoreNextChangeEvent = true;
+                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+                    }
+                }
+                else if(SelectedIndex > 0)
                 {
-                    Konsole.ConsoleInstance.TMP_InputField.text = _typeaheadCommands[index].Name;
-                }
-#endif
+                    if (_typeaheadResultsOffset > 0)
+                    {
+                        var shouldUpdateListResult = SelectedIndex < _typeaheadCommands.Count;
+                        _typeaheadResultsOffset--;
+                        if (shouldUpdateListResult)
+                        {
+                            ShowTypeaheadResults(_typeaheadResultsOffset);
+                        }
 
-                Konsole.ConsoleInstance.FocusInput();
-                Typeahead(string.Empty);
+                        _ignoreNextChangeEvent = true;
+                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+                    }
+                    else
+                    {
+                        _selectionIndex--;
+                        _ignoreNextChangeEvent = true;
+                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+                    }
+                }
             }
         }
     }

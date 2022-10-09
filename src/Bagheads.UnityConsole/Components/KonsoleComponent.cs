@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Bagheads.UnityConsole.Components
 {
-    public static class PreventFromEditor
+    public static partial class PreventFromEditor
     {
         [RequireComponent(typeof(CanvasGroup))]
         public class KonsoleComponent : MonoBehaviour
@@ -20,6 +20,7 @@ namespace Bagheads.UnityConsole.Components
 
             internal readonly List<string> ReusableListString = new(4);
             internal readonly List<RichParameter> ReusableRichParameters = new(4);
+            internal readonly List<Component> InternalComponents = new(4);
 
             private CanvasGroup _canvas;
             private RectTransform _transform;
@@ -39,6 +40,12 @@ namespace Bagheads.UnityConsole.Components
             private readonly Dictionary<RectTransform, (Image icon, MonoBehaviour textComponent)> _logs = new(MAX_LOGS_COUNT);
             private CommandContext _reusableCommandContext;
             private float _scrollToBottomAfter;
+#if KONSOLE_INPUT_SYSTEM
+            private string _inputActionBefore;
+#endif
+
+            // public properties
+            public bool IsShouldBeVisible => _shouldBeVisible;
 
             // public state
             [Header("public state")]
@@ -94,6 +101,7 @@ namespace Bagheads.UnityConsole.Components
             protected void OnDisable()
             {
                 Application.logMessageReceived -= OnLogMessageReceived;
+                UnfocusInput();
             }
 
             protected void OnDestroy()
@@ -192,6 +200,14 @@ namespace Bagheads.UnityConsole.Components
                 {
                     EventSystem.current.SetSelectedGameObject(TMP_InputField.gameObject, null);
                     TMP_InputField.ActivateInputField();
+                }
+#endif
+
+#if KONSOLE_INPUT_SYSTEM
+                if (TryGetInternalComponent<UnityEngine.InputSystem.PlayerInput>(out var playerInput)
+                    && playerInput.currentActionMap.name != PlayerInputUtils.KONSOLE_ACTION_NAME)
+                {
+                    _inputActionBefore = playerInput.SwitchOn(PlayerInputUtils.KONSOLE_ACTION_NAME);
                 }
 #endif
             }
@@ -388,6 +404,38 @@ namespace Bagheads.UnityConsole.Components
                     TMP_InputField.OnDeselect(new BaseEventData(EventSystem.current));
                 }
 #endif
+#if KONSOLE_INPUT_SYSTEM
+                if (TryGetInternalComponent<UnityEngine.InputSystem.PlayerInput>(out var playerInput))
+                {
+                    if (playerInput != null && playerInput.currentActionMap != null && _inputActionBefore != PlayerInputUtils.KONSOLE_ACTION_NAME)
+                    {
+                        // move back
+                        playerInput.SwitchOn(_inputActionBefore);
+                        _inputActionBefore = string.Empty;
+                    }
+                    else if (playerInput != null && playerInput.currentActionMap is {name: PlayerInputUtils.KONSOLE_ACTION_NAME})
+                    {
+                        // switch on default
+                        playerInput.SwitchOn(playerInput.defaultActionMap);
+                        _inputActionBefore = string.Empty;
+                    }
+                }
+#endif
+            }
+
+            internal bool TryGetInternalComponent<T>(out T component)
+            {
+                for (int i = 0; i < InternalComponents.Count; i++)
+                {
+                    if (InternalComponents[i] is T tRef)
+                    {
+                        component = tRef;
+                        return true;
+                    }
+                }
+
+                component = default;
+                return false;
             }
         }
     }

@@ -19,7 +19,7 @@ namespace Bagheads.UnityConsole
     [UnityEditor.InitializeOnLoadAttribute]
     public static class Konsole
     {
-        private const float CONSOLE_HEIGHT = 300f;
+        private const int CONSOLE_INITIAL_HEIGHT = 300;
         private const float INPUT_HEIGHT = 28;
         private const int DEFAULT_FONT_SIZE = 14;
 
@@ -199,27 +199,30 @@ namespace Bagheads.UnityConsole
                     return;
                 }
 
+                ConsoleInstance.InternalComponents.Add(playerInput);
+                
                 switch (playerInput.notificationBehavior)
                 {
                     case PlayerNotifications.SendMessages:
                     case PlayerNotifications.BroadcastMessages:
-#if UNITY_EDITOR
-                        Debug.LogWarning($"Konsole.{nameof(Internal_IntegrateConsole)} - you need to toggle console yourself by {nameof(Konsole)}.{nameof(ToggleConsole)}", ConsoleInstance);
-#endif
+                        // add listener on PlayerInput and listen from here
+                        var playerInputListenerComponent = playerInput.gameObject.AddComponent<KonsolePlayerInputListener>();
+                        ConsoleInstance.InternalComponents.Add(playerInputListenerComponent);
                         break;
 
                     case PlayerNotifications.InvokeUnityEvents:
                     case PlayerNotifications.InvokeCSharpEvents:
-                        foreach (var actionInMap in playerInput.currentActionMap.actions)
-                        {
-                            if (actionInMap.enabled
-                                && actionInMap.name == options.NewInputSystemToggleAction)
-                            {
-                                // TODO
-                                playerInput.onActionTriggered += context => { Debug.Log($"I see an action! {context.action.name}"); };
-                                break;
-                            }
-                        }
+                        // TODO inject into methods
+                        //
+                        // foreach (var actionInMap in playerInput.currentActionMap.actions)
+                        // {
+                        //     if (actionInMap.enabled
+                        //         && actionInMap.name == options.NewInputSystemToggleAction)
+                        //     {
+                        //         playerInput.onActionTriggered += context => { Debug.Log($"I see an action! {context.action.name}"); };
+                        //         break;
+                        //     }
+                        // }
 
                         break;
 
@@ -235,8 +238,10 @@ namespace Bagheads.UnityConsole
             ownerRectTransform.anchorMin = new Vector2(0, 1);
             ownerRectTransform.anchorMax = new Vector2(1, 1);
             ownerRectTransform.localScale = Vector3.one;
-            ownerRectTransform.sizeDelta = new Vector2(0f, CONSOLE_HEIGHT);
             ownerRectTransform.anchoredPosition = Vector3.zero;
+            var heightControlComponent = ownerRectTransform.gameObject.AddComponent<PreventFromEditor.ControlContainerHeight>();
+            heightControlComponent.SetHeight(CONSOLE_INITIAL_HEIGHT);
+            ConsoleInstance.InternalComponents.Add(heightControlComponent);
 
             // graphics
             var backgroundImage = consoleOwnerObject.AddComponent<Image>();
@@ -279,6 +284,7 @@ namespace Bagheads.UnityConsole
                         ? options.FontSize
                         : DEFAULT_FONT_SIZE;
                     inputComponent.onValueChanged.AddListener(typeahead.Typeahead);
+                    ConsoleInstance.InternalComponents.Add(typeahead);
                 }
 
                 // default unity engine text
@@ -294,8 +300,6 @@ namespace Bagheads.UnityConsole
                     // input field - text - positioning
                     RectUtils.SetUseAllSpace(textComponent.rectTransform, new Vector2(-10, -10));
                     inputComponent.textComponent = textComponent;
-
-                    ConsoleInstance.FocusInput();
                 }
 #if KONSOLE_TEXT_MESH_PRO
             }
@@ -319,6 +323,7 @@ namespace Bagheads.UnityConsole
                         : DEFAULT_FONT_SIZE;
                     typeahead.TmpFont = options.TMpFontAsset;
                     inputComponent.onValueChanged.AddListener(typeahead.Typeahead);
+                    ConsoleInstance.InternalComponents.Add(typeahead);
                 }
 
                 if (GoUtils.TryAddComponentAsChild<TMPro.TextMeshProUGUI>(inputComponent.transform as RectTransform, out var textComponent))
