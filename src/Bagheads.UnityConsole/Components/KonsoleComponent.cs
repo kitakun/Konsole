@@ -404,7 +404,6 @@ namespace Bagheads.UnityConsole.Components
                     TMP_InputField.OnDeselect(new BaseEventData(EventSystem.current));
                 }
 #endif
-                #define  KONSOLE_INPUT_SYSTEM
 #if KONSOLE_INPUT_SYSTEM
                 if (TryGetInternalComponent<UnityEngine.InputSystem.PlayerInput>(out var playerInput))
                 {

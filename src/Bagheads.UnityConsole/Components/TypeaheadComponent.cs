@@ -216,7 +216,8 @@ namespace Bahgeads.UnityConsole.Components
                         _ignoreNextChangeEvent = true;
                         SetInputText(_typeaheadCommands[SelectedIndex].Name);
 
-                        if (_selectionIndex + 1 == _lines.Count)
+                        if (_selectionIndex + 1 == _lines.Count
+                            && _typeaheadCommands.Count > _lines.Count)
                         {
                             _typeaheadResultsOffset++;
                             ShowTypeaheadResults(_typeaheadResultsOffset);
