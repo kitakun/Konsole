@@ -17,13 +17,9 @@ namespace Bagheads.UnityConsole.Commands
                     var rawNewSizeSliced = rawNewSize.Remove(rawNewSize.Length - 1, 1);
                     if (int.TryParse(rawNewSizeSliced, out var percentValue))
                     {
-                        for (var i = 0; i < context.Owner.InternalComponents.Count; i++)
+                        if (context.Owner.TryGetInternalComponent<PreventFromEditor.ControlContainerHeight>(out var heightController))
                         {
-                            if (context.Owner.InternalComponents[i] is PreventFromEditor.ControlContainerHeight heightController)
-                            {
-                                heightController.SetHeightPercent(percentValue);
-                                break;
-                            }
+                            heightController.SetHeightPercent(percentValue);
                         }
                     }
                     else
@@ -36,13 +32,9 @@ namespace Bagheads.UnityConsole.Commands
                     // direct
                     if (int.TryParse(rawNewSize, out var pixels))
                     {
-                        for (var i = 0; i < context.Owner.InternalComponents.Count; i++)
+                        if (context.Owner.TryGetInternalComponent<PreventFromEditor.ControlContainerHeight>(out var heightController))
                         {
-                            if (context.Owner.InternalComponents[i] is PreventFromEditor.ControlContainerHeight heightController)
-                            {
-                                heightController.SetHeight(pixels);
-                                break;
-                            }
+                            heightController.SetHeight(pixels);
                         }
                     }
                     else

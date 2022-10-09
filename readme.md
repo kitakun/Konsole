@@ -7,6 +7,9 @@ Benefits:
  - single line of code
  - easy custom commands with arguments integration
 
+# How to install
+Window - Package Manager - Add Package from Git URL - **`https://github.com/kitakun/Konsole.git`** - Add
+
 # How to include:
 
  - You can add component `CreateKonsole` on any object, this script will call method `IntegrateInExistingCanvas` on start.
@@ -95,6 +98,10 @@ protected void Awake()
 - ❌ - Unity's hot-reloading
 - ✔️  - TMP Text support
 - ☐  - Multilne in logs
-- ☐  - Support for all Unity.InputSystem events
+- ☐  - Support for Unity.InputSystem
+    - ✔️ - InputActions patcher
+    - ✔️ - Input Events - SendMessage/BroadcastMessage
+    - ☐ - Unity Events
+    - ☐ - CShart Events
 - ☐  - Console styles (GoldSRC, Source1 like, UnityDefaults)
 - ☐  - Customization (background image)

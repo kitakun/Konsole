@@ -199,27 +199,30 @@ namespace Bagheads.UnityConsole
                     return;
                 }
 
+                ConsoleInstance.InternalComponents.Add(playerInput);
+                
                 switch (playerInput.notificationBehavior)
                 {
                     case PlayerNotifications.SendMessages:
                     case PlayerNotifications.BroadcastMessages:
-#if UNITY_EDITOR
-                        Debug.LogWarning($"Konsole.{nameof(Internal_IntegrateConsole)} - you need to toggle console yourself by {nameof(Konsole)}.{nameof(ToggleConsole)}", ConsoleInstance);
-#endif
+                        // add listener on PlayerInput and listen from here
+                        var playerInputListenerComponent = playerInput.gameObject.AddComponent<KonsolePlayerInputListener>();
+                        ConsoleInstance.InternalComponents.Add(playerInputListenerComponent);
                         break;
 
                     case PlayerNotifications.InvokeUnityEvents:
                     case PlayerNotifications.InvokeCSharpEvents:
-                        foreach (var actionInMap in playerInput.currentActionMap.actions)
-                        {
-                            if (actionInMap.enabled
-                                && actionInMap.name == options.NewInputSystemToggleAction)
-                            {
-                                // TODO
-                                playerInput.onActionTriggered += context => { Debug.Log($"I see an action! {context.action.name}"); };
-                                break;
-                            }
-                        }
+                        // TODO inject into methods
+                        //
+                        // foreach (var actionInMap in playerInput.currentActionMap.actions)
+                        // {
+                        //     if (actionInMap.enabled
+                        //         && actionInMap.name == options.NewInputSystemToggleAction)
+                        //     {
+                        //         playerInput.onActionTriggered += context => { Debug.Log($"I see an action! {context.action.name}"); };
+                        //         break;
+                        //     }
+                        // }
 
                         break;
 
@@ -297,8 +300,6 @@ namespace Bagheads.UnityConsole
                     // input field - text - positioning
                     RectUtils.SetUseAllSpace(textComponent.rectTransform, new Vector2(-10, -10));
                     inputComponent.textComponent = textComponent;
-
-                    ConsoleInstance.FocusInput();
                 }
 #if KONSOLE_TEXT_MESH_PRO
             }
