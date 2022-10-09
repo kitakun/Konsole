@@ -410,7 +410,15 @@ namespace Bagheads.UnityConsole.Components
                     if (playerInput != null && playerInput.currentActionMap != null && _inputActionBefore != PlayerInputUtils.KONSOLE_ACTION_NAME)
                     {
                         // move back
-                        playerInput.SwitchOn(_inputActionBefore);
+                        if(!string.IsNullOrEmpty(_inputActionBefore))
+                        {
+                            playerInput.SwitchOn(_inputActionBefore);
+                        }
+                        else if(!string.IsNullOrEmpty(playerInput.defaultActionMap))
+                        {
+                            playerInput.SwitchOn(playerInput.defaultActionMap);
+                        }
+
                         _inputActionBefore = string.Empty;
                     }
                     else if (playerInput != null && playerInput.currentActionMap is {name: PlayerInputUtils.KONSOLE_ACTION_NAME})
