@@ -5,6 +5,10 @@ using Bagheads.UnityConsole.Utils;
 using System;
 using System.Collections.Generic;
 
+#if KONSOLE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,8 +31,7 @@ namespace Bahgeads.UnityConsole.Components
 
         // selections
         private int _selectionIndex = -1;
-        internal int SelectedIndex => _selectionIndex + _typeaheadResultsOffset;
-        private int _typeaheadResultsOffset = 0;
+        private int _typeaheadViewOffset = 0;
         private bool _ignoreNextChangeEvent;
 
         // unity
@@ -107,7 +110,8 @@ namespace Bahgeads.UnityConsole.Components
             }
 
             _selectionIndex = -1;
-            _typeaheadResultsOffset = 0;
+            HighlightHoveredTypeahead(_selectionIndex);
+            _typeaheadViewOffset = 0;
             var allCommands = Konsole.CommandsList;
             _typeaheadCommands.Clear();
 
@@ -122,7 +126,7 @@ namespace Bahgeads.UnityConsole.Components
                 }
             }
 
-            ShowTypeaheadResults(_typeaheadResultsOffset);
+            ShowTypeaheadResults(0);
         }
 
         // internals
@@ -143,7 +147,7 @@ namespace Bahgeads.UnityConsole.Components
             if (Konsole.ConsoleInstance.InputField != null)
             {
                 Konsole.ConsoleInstance.InputField.text = text;
-                Konsole.ConsoleInstance.InputField.caretPosition = text.Length;
+                Konsole.ConsoleInstance.InputField.MoveTextEnd(false);
             }
 
 #if KONSOLE_TEXT_MESH_PRO
@@ -155,11 +159,41 @@ namespace Bahgeads.UnityConsole.Components
 #endif
         }
 
-        private void ShowTypeaheadResults(int offset)
+        private void HighlightHoveredTypeahead(int selectedIndex)
         {
             for (var i = 0; i < _lines.Count; i++)
             {
-                var actualIndex = i + offset;
+                var actualIndex = i;
+                switch (_lines[i].textComponent)
+                {
+                    case Text defaultUnityText:
+                        defaultUnityText.fontStyle = selectedIndex == actualIndex
+                            ? FontStyle.Bold
+                            : FontStyle.Normal;
+                        break;
+
+#if KONSOLE_TEXT_MESH_PRO
+                    case TMPro.TextMeshProUGUI tmpText:
+                        tmpText.fontStyle = selectedIndex == actualIndex
+                            ? FontStyles.Bold
+                            : FontStyles.Normal;
+                        break;
+#endif
+
+                    default:
+#if KONSOLE_DEVELOPMENT
+                        Debug.LogError($"Type {_lines[i].textComponent.GetType().Name} not implemented", this);
+#endif
+                        break;
+                }
+            }
+        }
+
+        private void ShowTypeaheadResults(int selectionOffset)
+        {
+            for (var i = 0; i < _lines.Count; i++)
+            {
+                var actualIndex = i + selectionOffset;
                 var shouldBeVisible = _typeaheadCommands.Count > i;
                 if (shouldBeVisible)
                 {
@@ -176,7 +210,9 @@ namespace Bahgeads.UnityConsole.Components
 #endif
 
                         default:
-                            // TODO
+#if KONSOLE_DEVELOPMENT
+                        Debug.LogError($"Type {_lines[i].textComponent.GetType().Name} not implemented", this);
+#endif
                             break;
                     }
                 }
@@ -206,49 +242,35 @@ namespace Bahgeads.UnityConsole.Components
             {
                 if (isDown)
                 {
-                    if (_typeaheadCommands.Count > SelectedIndex + 1)
+                    if (_typeaheadCommands.Count > _selectionIndex + 1)
                     {
-                        if (_typeaheadResultsOffset <= 0)
+                        _selectionIndex = Mathf.Clamp(_selectionIndex + 1, 0, _typeaheadCommands.Count);
+                        if (_selectionIndex + _typeaheadViewOffset >= _lines.Count - 1
+                            && _lines.Count + _typeaheadViewOffset < _typeaheadCommands.Count)
                         {
-                            _selectionIndex++;
+                            _typeaheadViewOffset = Mathf.Clamp(_typeaheadViewOffset + 1, 0, _typeaheadCommands.Count);
                         }
 
                         _ignoreNextChangeEvent = true;
-                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
-
-                        if (_selectionIndex + 1 == _lines.Count
-                            && _typeaheadCommands.Count > _lines.Count)
-                        {
-                            _typeaheadResultsOffset++;
-                            ShowTypeaheadResults(_typeaheadResultsOffset);
-                        }
-                    }
-                    else if (_typeaheadCommands.Count == SelectedIndex + 1 && _typeaheadResultsOffset > 0)
-                    {
-                        // select last element
-                        _ignoreNextChangeEvent = true;
-                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+                        SetInputText(_typeaheadCommands[_selectionIndex].Name);
+                        HighlightHoveredTypeahead(_selectionIndex - _typeaheadViewOffset);
+                        ShowTypeaheadResults(_typeaheadViewOffset);
                     }
                 }
-                else if(SelectedIndex > 0)
+                else
                 {
-                    if (_typeaheadResultsOffset > 0)
+                    if (_selectionIndex > 0)
                     {
-                        var shouldUpdateListResult = SelectedIndex < _typeaheadCommands.Count;
-                        _typeaheadResultsOffset--;
-                        if (shouldUpdateListResult)
+                        _selectionIndex = Mathf.Clamp(_selectionIndex - 1, 0, _typeaheadCommands.Count);
+                        if (_selectionIndex <= _typeaheadViewOffset)
                         {
-                            ShowTypeaheadResults(_typeaheadResultsOffset);
+                            _typeaheadViewOffset = Mathf.Clamp(_typeaheadViewOffset - 1, 0, _typeaheadCommands.Count);
                         }
 
                         _ignoreNextChangeEvent = true;
-                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
-                    }
-                    else
-                    {
-                        _selectionIndex--;
-                        _ignoreNextChangeEvent = true;
-                        SetInputText(_typeaheadCommands[SelectedIndex].Name);
+                        SetInputText(_typeaheadCommands[_selectionIndex].Name);
+                        HighlightHoveredTypeahead(_selectionIndex - _typeaheadViewOffset);
+                        ShowTypeaheadResults(_typeaheadViewOffset);
                     }
                 }
             }

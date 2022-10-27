@@ -48,6 +48,6 @@ namespace Bagheads.UnityConsole.Data
         /// <summary>
         /// How much lines will be under InputFields with founded similar commands
         /// </summary>
-        public int AutoCompleteLines = 3;
+        public int AutoCompleteLines = 4;
     }
 }

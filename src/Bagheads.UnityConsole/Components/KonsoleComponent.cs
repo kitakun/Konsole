@@ -242,6 +242,9 @@ namespace Bagheads.UnityConsole.Components
 
             internal void OnSubmit(string data)
             {
+                if (string.IsNullOrEmpty(data))
+                    return;
+                
                 if (_inputField != null)
                 {
                     _inputField.text = string.Empty;
