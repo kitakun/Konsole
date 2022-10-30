@@ -186,6 +186,7 @@ namespace Bagheads.UnityConsole.Components
             public void ToggleConsole()
             {
                 _shouldBeVisible = !_shouldBeVisible;
+                Konsole.RiseVisibleChanged(_shouldBeVisible);
             }
 
             public void FocusInput()

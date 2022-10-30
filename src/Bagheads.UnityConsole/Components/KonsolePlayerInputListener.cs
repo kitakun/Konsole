@@ -13,6 +13,11 @@ namespace Bagheads.UnityConsole.Components
         /// <param name="input">call params</param>
         protected void OnToggleConsole(InputValue input)
         {
+            ApplyToggleConsole();
+        }
+
+        public static void ApplyToggleConsole()
+        {
             if (Konsole.ConsoleInstance != null)
             {
                 Konsole.ConsoleInstance.ToggleConsole();
@@ -23,6 +28,11 @@ namespace Bagheads.UnityConsole.Components
         /// Tab is pressed
         /// </summary>
         protected void OnTab(InputValue input)
+        {
+            ApplyTab();
+        }
+
+        public static void ApplyTab()
         {
             if (Konsole.ConsoleInstance != null
                 && Konsole.ConsoleInstance.TryGetInternalComponent<TypeaheadComponent>(out var typeahead))
@@ -36,12 +46,20 @@ namespace Bagheads.UnityConsole.Components
         /// </summary>
         protected void OnSelectDirection(InputValue input)
         {
-            var rawInput = input.Get<float>();
-            if (rawInput != 0
-                && Konsole.ConsoleInstance != null
+            var rawValue = input.Get<float>();
+            if (rawValue != 0)
+            {
+                var isDown = rawValue < 0.1f;
+
+                ApplySelectDirection(isDown);
+            }
+        }
+
+        public static void ApplySelectDirection(bool isDown)
+        {
+            if (Konsole.ConsoleInstance != null
                 && Konsole.ConsoleInstance.TryGetInternalComponent<TypeaheadComponent>(out var typeahead))
             {
-                var isDown = input.Get<float>() < 0.1f;
 
                 typeahead.OnInput_Direction(isDown);
             }

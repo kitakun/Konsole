@@ -16,6 +16,8 @@ using UnityEngine.InputSystem;
 
 namespace Bagheads.UnityConsole
 {
+    public delegate void IsBoolStateChanged(bool isVisible);
+    
     [UnityEditor.InitializeOnLoadAttribute]
     public static class Konsole
     {
@@ -25,6 +27,11 @@ namespace Bagheads.UnityConsole
 
         public static PreventFromEditor.KonsoleComponent ConsoleInstance { get; internal set; }
 
+        /// <summary>
+        /// Triggers every time console get hidden or shown
+        /// </summary>
+        public static event Action<bool> OnKonsoleVisibleStateChanged = delegate {  };
+        
         public static List<ICommand> CommandsList { get; } = new()
         {
             new Command_Help(),
@@ -200,7 +207,7 @@ namespace Bagheads.UnityConsole
                 }
 
                 ConsoleInstance.InternalComponents.Add(playerInput);
-                
+
                 switch (playerInput.notificationBehavior)
                 {
                     case PlayerNotifications.SendMessages:
@@ -210,19 +217,33 @@ namespace Bagheads.UnityConsole
                         ConsoleInstance.InternalComponents.Add(playerInputListenerComponent);
                         break;
 
-                    case PlayerNotifications.InvokeUnityEvents:
                     case PlayerNotifications.InvokeCSharpEvents:
-                        // TODO inject into methods
-                        //
-                        // foreach (var actionInMap in playerInput.currentActionMap.actions)
-                        // {
-                        //     if (actionInMap.enabled
-                        //         && actionInMap.name == options.NewInputSystemToggleAction)
-                        //     {
-                        //         playerInput.onActionTriggered += context => { Debug.Log($"I see an action! {context.action.name}"); };
-                        //         break;
-                        //     }
-                        // }
+                        // TODO
+                        break;
+
+                    case PlayerNotifications.InvokeUnityEvents:
+                        foreach (var actionMap in playerInput.actions)
+                        {
+                            switch (actionMap.name)
+                            {
+                                case { } when actionMap.name == options.NewInputSystemToggleAction:
+                                    actionMap.performed += _ => KonsolePlayerInputListener.ApplyToggleConsole();
+                                    break;
+
+                                case CommandConstants.SelectDirection:
+                                    actionMap.performed += context =>
+                                    {
+                                        var isDown = context.ReadValue<float>() < 0.1f;
+
+                                        KonsolePlayerInputListener.ApplySelectDirection(isDown);
+                                    };
+                                    break;
+
+                                case CommandConstants.Tab:
+                                    actionMap.performed += _ => KonsolePlayerInputListener.ApplyTab();
+                                    break;
+                            }
+                        }
 
                         break;
 
@@ -436,6 +457,11 @@ namespace Bagheads.UnityConsole
 
             command = default;
             return false;
+        }
+        
+        internal static void RiseVisibleChanged(bool isVisible)
+        {
+            OnKonsoleVisibleStateChanged(isVisible);
         }
     }
 }

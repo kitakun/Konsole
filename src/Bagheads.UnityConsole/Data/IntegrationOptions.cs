@@ -13,7 +13,7 @@ namespace Bagheads.UnityConsole.Data
         /// <summary>
         /// Action name to be injected into
         /// </summary>
-        public string NewInputSystemToggleAction;
+        public string NewInputSystemToggleAction = nameof(Konsole.ToggleConsole);
 #endif
 
         /// <summary>

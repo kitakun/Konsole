@@ -101,7 +101,7 @@ protected void Awake()
 - ☐  - Support for Unity.InputSystem
     - ✔️ - InputActions patcher
     - ✔️ - Input Events - SendMessage/BroadcastMessage
-    - ☐ - Unity Events
+    - ✔️ - Unity Events
     - ☐ - CShart Events
 - ☐  - Console styles (GoldSRC, Source1 like, UnityDefaults)
 - ☐  - Customization (background image)
