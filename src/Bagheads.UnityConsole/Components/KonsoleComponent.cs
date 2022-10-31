@@ -206,7 +206,8 @@ namespace Bagheads.UnityConsole.Components
 
 #if KONSOLE_INPUT_SYSTEM
                 if (TryGetInternalComponent<UnityEngine.InputSystem.PlayerInput>(out var playerInput)
-                    && playerInput.currentActionMap.name != PlayerInputUtils.KONSOLE_ACTION_NAME)
+                    && playerInput.currentActionMap.name != PlayerInputUtils.KONSOLE_ACTION_NAME
+                    && _shouldBeVisible)
                 {
                     _inputActionBefore = playerInput.SwitchOn(PlayerInputUtils.KONSOLE_ACTION_NAME);
                 }
