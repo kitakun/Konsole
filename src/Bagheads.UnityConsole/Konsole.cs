@@ -18,7 +18,9 @@ namespace Bagheads.UnityConsole
 {
     public delegate void IsBoolStateChanged(bool isVisible);
     
+#if UNITY_EDITOR
     [UnityEditor.InitializeOnLoadAttribute]
+#endif
     public static class Konsole
     {
         private const int CONSOLE_INITIAL_HEIGHT = 300;

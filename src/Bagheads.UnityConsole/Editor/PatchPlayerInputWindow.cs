@@ -1,4 +1,5 @@
-﻿using Bagheads.UnityConsole.Utils;
+﻿#if UNITY_EDITOR
+using Bagheads.UnityConsole.Utils;
 using Bagheads.UnityConsole.Utils.SimpleJSON;
 
 using System;
@@ -319,3 +320,4 @@ namespace Bagheads.UnityConsole.Editor
     }
 #endif
 }
+#endif
