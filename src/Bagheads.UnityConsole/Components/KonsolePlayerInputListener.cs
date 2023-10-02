@@ -1,12 +1,15 @@
 ﻿using Bahgeads.UnityConsole.Components;
 
 using UnityEngine;
+#if KONSOLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+#endif
 
 namespace Bagheads.UnityConsole.Components
 {
     public class KonsolePlayerInputListener : MonoBehaviour
     {
+#if KONSOLE_INPUT_SYSTEM
         /// <summary>
         /// Catch SendMessage or BroadcastMessage from PlayerInput
         /// </summary>
@@ -64,5 +67,6 @@ namespace Bagheads.UnityConsole.Components
                 typeahead.OnInput_Direction(isDown);
             }
         }
+#endif
     }
 }

@@ -317,7 +317,7 @@ namespace Bagheads.UnityConsole.Editor
             EditorGUILayout.EndHorizontal();
             GUI.enabled = true;
         }
-    }
 #endif
+    }
 }
 #endif
