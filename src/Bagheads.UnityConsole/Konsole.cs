@@ -34,13 +34,13 @@ namespace Bagheads.UnityConsole
         /// </summary>
         public static event Action<bool> OnKonsoleVisibleStateChanged = delegate {  };
         
-        public static List<ICommand> CommandsList { get; } = new()
+        public static Dictionary<string, ICommand> CommandsDictionary { get; } = new()
         {
-            new Command_Help(),
-            new Command_HelloWorld(),
-            new Command_Clear(),
-            new Command_Quit(),
-            new Command_setHeight(),
+            { new Command_Help().Name, new Command_Help() },
+            { new Command_HelloWorld().Name, new Command_HelloWorld() },
+            { new Command_Clear().Name, new Command_Clear() },
+            { new Command_Quit().Name, new Command_Quit() },
+            { new Command_setHeight().Name, new Command_setHeight() },
         };
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Bagheads.UnityConsole
                 return;
             }
 
-            CommandsList.Add(new Command_Anonymous(name, action, description));
+            CommandsDictionary[name] = new Command_Anonymous(name, action, description);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Bagheads.UnityConsole
                 return;
             }
 
-            CommandsList.Add(new Command_Anonymous(name, action));
+            CommandsDictionary[name] = new Command_Anonymous(name, action);
         }
 
         /// <summary>
@@ -147,14 +147,7 @@ namespace Bagheads.UnityConsole
         /// </summary>
         public static void RemoveAllAnonymousCommands()
         {
-            for (var i = 0; i < CommandsList.Count; i++)
-            {
-                if (CommandsList[i] is Command_Anonymous)
-                {
-                    CommandsList.RemoveAt(i);
-                    i--;
-                }
-            }
+            CommandsDictionary.Clear();
         }
 
         // internals
@@ -453,14 +446,10 @@ namespace Bagheads.UnityConsole
                 commandInput = data.AsSpan()[..indexOfSpace];
             }
 
-            for (var i = 0; i < CommandsList.Count; i++)
+            if (CommandsDictionary.ContainsKey(commandInput))
             {
-                if (CommandsList[i].Name.AsSpan().SequenceEqual(commandInput))
-                {
-                    // found our command
-                    command = CommandsList[i];
-                    return true;
-                }
+                command = CommandsDictionary[commandInput];
+                return true;
             }
 
             command = default;

@@ -9,17 +9,17 @@ namespace Bagheads.UnityConsole.Commands
 
         public void Launch(CommandContext context)
         {
-            var allCommands = Konsole.CommandsList;
+            var allCommands = Konsole.CommandsDictionary;
             if (!context.IsMultilineSupported)
             {
                 context.Log($"All available commands (Count={TextTags.Bold(allCommands.Count.ToString())})");
 
-                for (var i = 0; i < allCommands.Count; i++)
+                foreach (var pair in allCommands)
                 {
-                    var commandDescription = !string.IsNullOrEmpty(allCommands[i].Description)
-                        ? allCommands[i].Description
+                    var commandDescription = !string.IsNullOrEmpty(pair.Value.Description)
+                        ? pair.Value.Description
                         : "No description for this command";
-                    context.Log($" - {TextTags.WithColor("#30C000", allCommands[i].Name)} : {commandDescription}");
+                    context.Log($" - {TextTags.WithColor("#30C000", pair.Value.Name)} : {commandDescription}");
                 }
             }
             else

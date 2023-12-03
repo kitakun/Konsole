@@ -112,16 +112,16 @@ namespace Bahgeads.UnityConsole.Components
             _selectionIndex = -1;
             HighlightHoveredTypeahead(_selectionIndex);
             _typeaheadViewOffset = 0;
-            var allCommands = Konsole.CommandsList;
+            var allCommands = Konsole.CommandsDictionary;
             _typeaheadCommands.Clear();
 
             if (!string.IsNullOrEmpty(inputText))
             {
-                for (var i = 0; i < allCommands.Count; i++)
+                foreach(var pair in allCommands)
                 {
-                    if (allCommands[i].Name.IndexOf(inputText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (pair.Value.Name.IndexOf(inputText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        _typeaheadCommands.Add(allCommands[i]);
+                        _typeaheadCommands.Add(pair.Value);
                     }
                 }
             }
