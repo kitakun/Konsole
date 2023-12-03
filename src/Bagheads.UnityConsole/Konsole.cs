@@ -181,9 +181,15 @@ namespace Bagheads.UnityConsole
             // KonsoleComponent
             ConsoleInstance = consoleOwnerObject.GetComponent<PreventFromEditor.KonsoleComponent>();
             ConsoleInstance.UseTMP = options.UseTextMeshPro;
-            ConsoleInstance.DefaultFont = options.DefaultTextFont != null
-                ? options.DefaultTextFont
-                : Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            try{
+                ConsoleInstance.DefaultFont = options.DefaultTextFont != null
+                    ? options.DefaultTextFont
+                    : Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            } catch {
+                if(ConsoleInstance.DefaultFont == options.DefaultTextFont) {
+                    ConsoleInstance.DefaultFont = Resources.GetBuiltinResource(typeof(Font), "LegacyRuntime.ttf") as Font;
+                }
+            }
             ConsoleInstance.FontSize = options.FontSize > 0
                 ? options.FontSize
                 : DEFAULT_FONT_SIZE;
