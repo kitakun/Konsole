@@ -7,17 +7,18 @@ namespace Bagheads.UnityConsole.Components
     public class CreateKonsole : MonoBehaviour
     {
         [SerializeField]
-        private Font m_font;
-
-        [SerializeField]
         private int m_fontSize = 14;
 
 #if KONSOLE_TEXT_MESH_PRO
-        [SerializeField]
-        private bool m_useTextMeshPro = true;
+        private const bool _useTextMeshPro = true;
 
         [SerializeField]
         private TMPro.TMP_FontAsset m_textMeshFont;
+#else
+        private const bool _useTextMeshPro = false;
+
+        [SerializeField]
+        private Font m_font;
 #endif
 
         protected void Awake()
@@ -25,10 +26,11 @@ namespace Bagheads.UnityConsole.Components
             Konsole.IntegrateInExistingCanvas(new IntegrationOptions
             {
                 FontSize = m_fontSize,
-                DefaultTextFont = m_font,
 #if KONSOLE_TEXT_MESH_PRO
-                UseTextMeshPro = m_useTextMeshPro,
+                UseTextMeshPro = _useTextMeshPro,
                 TMpFontAsset = m_textMeshFont,
+#else
+                DefaultTextFont = m_font,
 #endif
             });
         }

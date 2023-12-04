@@ -89,6 +89,27 @@ namespace Bagheads.UnityConsole
         }
 
         /// <summary>
+        /// Register command class
+        /// </summary>
+        /// <param name="command">command instance</param>
+        public static void RegisterCommand(ICommand command)
+        {
+            if (command == null)
+            {
+                Debug.LogError($"Konsole.{nameof(RegisterCommand)} - parameter:{nameof(command)} can't be empty!");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(command.Name))
+            {
+                Debug.LogError($"Konsole.{nameof(RegisterCommand)} - parameter:{nameof(command.Name)} can't be empty!");
+                return;
+            }
+
+            CommandsDictionary[command.Name] = command;
+        }
+
+        /// <summary>
         /// Make console visible or hide
         /// </summary>
         public static void ToggleConsole()
@@ -147,7 +168,19 @@ namespace Bagheads.UnityConsole
         /// </summary>
         public static void RemoveAllAnonymousCommands()
         {
-            CommandsDictionary.Clear();
+            var result = new List<string>();
+            foreach (var pair in CommandsDictionary)
+            {
+                if (pair.Value is Command_Anonymous an)
+                {
+                    result.Add(an.Name);
+                }
+            }
+
+            foreach (var anName in result)
+            {
+                CommandsDictionary.Remove(anName);
+            }
         }
 
         // internals
@@ -277,7 +310,7 @@ namespace Bagheads.UnityConsole
             inputRect.localScale = Vector3.one;
 
             // input field - positioning
-            // no button, we do we need it?
+            // no button, do we need it?
             const float BUTTON_WIDTH = 0;
             RectUtils.SetUseBottomLine(inputRect, new Vector2(-BUTTON_WIDTH, INPUT_HEIGHT));
 
@@ -446,14 +479,7 @@ namespace Bagheads.UnityConsole
                 commandInput = data.AsSpan()[..indexOfSpace];
             }
 
-            if (CommandsDictionary.ContainsKey(commandInput))
-            {
-                command = CommandsDictionary[commandInput];
-                return true;
-            }
-
-            command = default;
-            return false;
+            return CommandsDictionary.TryGetValue(commandInput.ToString(), out command);
         }
         
         internal static void RiseVisibleChanged(bool isVisible)

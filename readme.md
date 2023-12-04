@@ -63,7 +63,7 @@ In any place:
 ```cs
 protected void Start()
 {
-    Konsole.CommandsDictionary.Add("quit", new Command_Quit());
+    Konsole.CommandsDictionary["quit"] = new Command_Quit();
 }
 ```
 
